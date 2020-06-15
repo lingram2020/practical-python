@@ -148,6 +148,125 @@ file_price = 'Data/prices.csv'
 portfolio_report(file_portfolio, file_price)
 
 
+# report.py
+#
+# Exercise 2.4
+import csv
+from pprint import pprint
+from fileparse_copy import parse_csv
+
+def portfolio_cost(filename):
+    '''
+    Computes the total cost (shares*price) of a portfolio file
+    '''
+    total_cost = 0.0
+
+    with open(filename, 'rt') as f:
+        rows = csv.reader(f)
+        headers = next(rows)
+        for rowno, row in enumerate(rows):
+            record = dict(zip(headers, row))
+            try:
+                nshares = int(record['shares'])
+                price = float(record['price'])
+                total_cost += nshares * price
+            except ValueError:
+                print(f"Row {row_no}: Bad row: {row}")
+    return total_cost
+
+
+def read_portfolio(filename, select=['name','shares','price'], types=[str,int,float], has_headers=True):
+    '''
+    Opens a given portfolio file and reads it into a list of dictionaries
+    '''
+    portfolio = parse_csv(filename, select=select, types=types, has_headers=has_headers)
+    
+    return portfolio
+
+
+def read_prices(filename, types=[str, float], has_headers=False): #, select=None, types=None, has_headers=True, delimiter=',', silence_errors=False):
+    '''
+    Reads a set of prices into a dictionary where the keys of the
+    dictionary are the stock names and the values in the dictionary are the stock prices
+    '''
+    list_prices = parse_csv(filename, types=types, has_headers=has_headers) #, select, types, has_headers, delimiter, silence_errors)
+    prices = dict(list_prices)
+    
+    return prices
+
+
+def current_value(portfolio, prices):
+    '''
+    Computes current value of portfolio
+    '''
+    current_value = 0.0
+
+    for i in portfolio:
+        current_value += i['shares'] * prices[i['name']]
+
+    return current_value
+
+
+def make_report(portfolio, prices):
+    '''
+    Takes a list of stocks and dictionary of prices as input and
+    returns a list of tuples containing the rows of the above table
+    '''
+
+    report = [] # list of tuples
+
+    for stock in portfolio:
+        name = stock['name']
+        shares = stock['shares']
+        price = prices[name]
+        change = price - stock['price']
+        t = (name, shares, price, change)
+        report.append(t)
+
+    return report
+
+
+def print_report(report):
+    '''
+    Prints out report
+    '''
+    headers = ('Name', 'Shares', 'Price', 'Change')
+    print(f'{headers[0]:>10s} {headers[1]:>10s} {headers[2]:>10s} {headers[3]:>10s}')
+    seperator = '---------- ---------- ---------- ----------'
+    print(seperator)
+    # print formatted report
+    for name, shares, price, change in report:
+        if price:
+            price = '$' + str(price)
+        print(f'{name:>10s} {shares:>10d} {price:>10s} {change:>10.2f}')
+
+
+def portfolio_report(portfolio_filename, prices_filename):
+    '''
+    Makes and prints out final report
+    '''
+    portfolio = read_portfolio(portfolio_filename)
+    prices = read_prices(prices_filename)
+    report = make_report(portfolio, prices)
+
+    return (print_report(report))
+
+
+# file paths
+file_portfolio = 'Data/portfolio.csv'
+file_price = 'Data/prices.csv'
+
+# call functions
+portfolio_report(file_portfolio, file_price)
+
+
+
+
+
+
+
+
+
 
 
 
